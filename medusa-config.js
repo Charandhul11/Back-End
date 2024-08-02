@@ -22,16 +22,19 @@ try {
 } catch (e) {}
 
 // CORS when consuming Medusa from admin
-const ADMIN_CORS =
-  process.env.ADMIN_CORS || "http://localhost:7000,http://localhost:7001";
+const ADMIN_CORS =process.env.ADMIN_CORS || "http://localhost:7000,http://localhost:7001";
 
 // CORS to avoid issues when consuming Medusa from a client
 const STORE_CORS = process.env.STORE_CORS || "http://localhost:8000";
 
-const DATABASE_URL =
-  process.env.DATABASE_URL || "postgres://localhost/medusa-starter-default";
-
+const DATABASE_URL =process.env.DATABASE_URL || "postgres://localhost/medusa-starter-default";
+const BACKEND_URL = process.env.BACKEND_URL || "localhost:9000"
+const ADMIN_URL = process.env.ADMIN_URL || "localhost:7000"
+const STORE_URL = process.env.STORE_URL || "localhost:8000"
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+
+const GoogleClientId = process.env.GOOGLE_CLIENT_ID || "60792650364-b6lsqabkk0okdhm2kg9jhopgicigjq96.apps.googleusercontent.com"
+const GoogleClientSecret = process.env.GOOGLE_CLIENT_SECRET || "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"
 
 const plugins = [
   `medusa-fulfillment-manual`,
@@ -42,6 +45,47 @@ const plugins = [
       upload_dir: "uploads",
     },
   },
+  {
+    resolve: "medusa-plugin-auth",
+    /** @type {import('medusa-plugin-auth').AuthOptions} */
+    options: [
+      {
+        type: "google",
+        // strict: "all", // or "none" or "store" or "admin"
+        strict: "none",
+        identifier: "google",
+        clientID: GoogleClientId,
+        clientSecret: GoogleClientSecret,
+        admin: {
+          callbackUrl: `${BACKEND_URL}/admin/auth/google/cb`,
+          failureRedirect: `${ADMIN_URL}/login`,
+          // The success redirect can be overriden from the client by adding a query param `?redirectTo=your_url` to the auth url
+          // This query param will have the priority over this configuration
+          successRedirect: `${ADMIN_URL}/`
+          // authPath: '/admin/auth/google',
+          // authCallbackPath: '/admin/auth/google/cb',
+          // expiresIn: 24 * 60 * 60 * 1000,
+          // verifyCallback: (container, req, accessToken, refreshToken, profile, strict) => {
+          //    // implement your custom verify callback here if you need it
+          // },
+        },
+        store: {
+          callbackUrl: `${BACKEND_URL}/store/auth/google/cb`,
+          failureRedirect: `${STORE_URL}/login`,
+          // The success redirect can be overriden from the client by adding a query param `?redirectTo=your_url` to the auth url
+          // This query param will have the priority over this configuration
+          successRedirect: `${STORE_URL}/`
+          // authPath: '/store/auth/google',
+          // authCallbackPath: '/store/auth/google/cb',
+          // expiresIn: 24 * 60 * 60 * 1000,
+          // verifyCallback: (container, req, accessToken, refreshToken, profile, strict) => {
+          //    // implement your custom verify callback here if you need it
+          // },
+        }
+      }
+    ]
+    },
+  
   {
     resolve: `medusa-payment-razorpay-poorvika`,
     options: {
@@ -125,6 +169,32 @@ const plugins = [
       },
     },
   },
+  {
+    resolve: `@rsc-labs/medusa-store-analytics`,
+    options: {
+      enableUI: true
+    }
+  },
+  // {
+  //   resolve: `medusa-plugin-slack-notification`,
+  //   options: {
+  //     show_discount_code: false, // optional, whether the discount code should be shown in notifications
+  //     slack_url: process.env.SLACK_WEBHOOK_URL ||"https://hooks.slack.com/services/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",
+  //     admin_orders_url: process.env.SLACK_ADMIN_ORDERS_URL || "http://localhost:7001/a/orders", // for example, 
+  //   },
+  // },
+
+  {
+    resolve: "medusa-plugin-courier",
+    options: {
+      store_name: "Charandhul",
+      auth_token: "pk_prod_30EZP29AVW443PPG7GMRQ4YR50MP",
+      store_url: process.env.STOREFRONT_URL || "http://localhost:8000",
+      template: {
+          "order.placed": "{COURIER_TEMPLATE_ID}"
+      }
+    }
+}
 ];
 
 const modules = {
