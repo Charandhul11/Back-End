@@ -37,6 +37,29 @@ const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 const GoogleClientId = process.env.GOOGLE_CLIENT_ID || "60792650364-b6lsqabkk0okdhm2kg9jhopgicigjq96.apps.googleusercontent.com"
 const GoogleClientSecret = process.env.GOOGLE_CLIENT_SECRET || "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"
 
+const sendGridParameters = {
+  api_key: process.env?.SENDGRID_API_KEY,
+  from: process.env?.SENDGRID_FROM,
+  gift_card_created_template: "Thank you for your test gift card",
+  order_placed_template: process.env.SENDGRID_GUID_ORDER_PLACED ||"d-f7332e6651f14eb4ad26b069e8e1d6c9",
+  order_cancelled_template: "This is a test order cancelled card",
+  order_shipped_template: "This is a test order shipped card",
+  order_completed_template: "This is a test order completed card",
+  user_password_reset_template: "This is a test user password reset card",
+  customer_password_reset_template:
+      "This is a test customer password reset card"
+  /* localization: {
+"de-DE": { // locale key
+gift_card_created_template: [used on gift_card.created],
+order_placed_template: [used on order.placed],
+order_cancelled_template: [used on order.cancelled],
+order_shipped_template: [used on order.shipment_created],
+order_completed_template: [used on order.completed],
+user_password_reset_template: [used on user.password_reset],
+customer_password_reset_template: [used on customer.password_reset],
+}*/
+};
+
 const plugins = [
   `medusa-fulfillment-manual`,
   `medusa-payment-manual`,
@@ -178,14 +201,9 @@ const plugins = [
   },
 
   {
-    resolve: `medusa-plugin-sendgrid`,
-    options: {
-      api_key: process.env.SENDGRID_API_KEY,
-      from: process.env.SENDGRID_FROM,
-      order_placed_template:"d-f7332e6651f14eb4ad26b069e8e1d6c9",
-      
-    },
-  },
+    resolve: "medusa-plugin-sendgrid",
+    options: sendGridParameters
+},
 
 ];
 
